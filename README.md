@@ -35,11 +35,8 @@ The client runs on https://easynet.herokuapp.com
 
 ## Meta
 
-Zubeir Mohamed – [@ZubeirMohamed2](https://twitter.com/ZubeirMohamed2) – [@zubeir-mohamed-29668217b](https://www.linkedin.com/in/zubeir-mohamed-29668217b/) - zubeir.mohamed@outlook.de
+Zubeir Mohamed – [@ZubeirMohamed2](https://twitter.com/ZubeirMohamed2) – [@zubeir-mohamed-29668217b](https://www.linkedin.com/in/zubeir-mohamed-29668217b/) – zubeir.mohamed@outlook.de
 
-Distributed under the XYZ license. See ``LICENSE`` for more information.
-
-[https://github.com/yourname/github-link](https://github.com/dbader/)
 
 ## Contributing
 
