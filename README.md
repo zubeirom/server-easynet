@@ -11,17 +11,15 @@ One to two paragraph statement about your product and what it does.
 
 ## Installation
 
-OS X & Linux:
+```sh
+git clone https://github.com/zubeir68/server-easynet.git 
+```0
+
+## Run
 
 ```sh
-npm install my-crazy-module --save
-```
-
-Windows:
-
-```sh
-edit autoexec.bat
-```
+node app.js
+```0
 
 ## Usage example
 
