@@ -4,7 +4,7 @@
 ## Tech Stack
 
 1. PostgresSQL
-2. Node.js Express.js
+2. Express.js
 3. Ember.js 
 
 ## The Entity Relationship Diagram of the Database
