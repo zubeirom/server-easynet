@@ -8,21 +8,21 @@
 --     PRIMARY KEY (user_name)
 -- );
 
--- create table post (
---     post_id serial PRIMARY KEY,
+-- CREATE TABLE post (
+--     post_id SERIAL PRIMARY KEY,
 --     author VARCHAR(40),
---     message VARCHAR(500) not NULL,
+--     message VARCHAR(500) NOT NULL,
 --     likes INT,
---     created date not NULL,
---     FOREIGN KEY(author) REFERENCES person(user_name)
+--     created date NOT NULL,
+--     FOREIGN KEY(author) REFERENCES person(user_name) ON DELETE CASCADE
 -- )
 
-CREATE TABLE comment (
-    comment_id SERIAL PRIMARY KEY,
-    message VARCHAR(200) NOT NULL,
-    created DATE NOT NULL,
-    author VARCHAR(40),
-    post_id int,
-    FOREIGN KEY(author) REFERENCES person(user_name),
-    FOREIGN KEY(post_id) REFERENCES post(post_id)
-)
+-- CREATE TABLE comment (
+--     comment_id SERIAL PRIMARY KEY,
+--     message VARCHAR(200) NOT NULL,
+--     created DATE NOT NULL,
+--     author VARCHAR(40),
+--     post_id int,
+--     FOREIGN KEY(author) REFERENCES person(user_name) ON DELETE CASCADE,
+--     FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE
+-- )
