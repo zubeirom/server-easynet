@@ -26,3 +26,10 @@
 --     FOREIGN KEY(author) REFERENCES person(user_name) ON DELETE CASCADE,
 --     FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE
 -- )
+
+CREATE TABLE friends (
+    user_name VARCHAR(40),
+    friend VARCHAR(40),
+    FOREIGN KEY(user_name) REFERENCES person(user_name) ON DELETE SET NULL,
+    FOREIGN KEY(friend) REFERENCES person(user_name) ON DELETE SET NULL
+)
