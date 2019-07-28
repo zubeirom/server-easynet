@@ -34,9 +34,9 @@
 --     FOREIGN KEY(friend) REFERENCES person(user_name) ON DELETE SET NULL
 -- )
 
-CREATE TABLE likes (
-    post_id INT,
-    user_name VARCHAR(40),
-    FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE,
-    FOREIGN KEY(user_name) REFERENCES person(user_name) ON DELETE CASCADE
-)
+-- CREATE TABLE likes (
+--     post_id INT,
+--     user_name VARCHAR(40),
+--     FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE,
+--     FOREIGN KEY(user_name) REFERENCES person(user_name) ON DELETE CASCADE
+-- )
