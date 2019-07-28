@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -5,11 +6,32 @@ const asyncHandler = require('express-async-handler');
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
 const db = require('../db/index');
+// const jwt = require('../jwt/jwt');
 
 const router = express.Router();
 
 router.post('/token', asyncHandler(async (req, res, next) => {
-    console.log(req.body);
+    const { grant_type, password, username } = req.body;
+    if (grant_type === 'password') {
+        try {
+            const data = await db.query(`SELECT * FROM person WHERE user_name='${username}'`);
+            if (data.rowCount === 1) {
+                const person = data.rows[0];
+                if (bcrypt.compareSync(password, person.password)) {
+                    // TODO: JWT SIGN AND SEND TOKEN
+                } else {
+                    res.status(400).send('{"error": "invalid_grant"}');
+                    next();
+                }
+            } else {
+                res.status(400).send('{"error": "invalid_grant"}');
+                next();
+            }
+        } catch (error) {
+            res.status(400).send('{ "error": "unsupported_grant_type" }');
+            next();
+        }
+    }
 }));
 
 
