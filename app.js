@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+
 const app = express();
 
 // Bodyparser
@@ -11,6 +12,7 @@ app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 // cors
 app.use(cors());
 
+app.use('/', require('./routes/index'));
 
 const PORT = process.env.PORT || 3000;
 
