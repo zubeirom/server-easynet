@@ -8,6 +8,11 @@ const db = require('../db/index');
 
 const router = express.Router();
 
+router.post('/token', asyncHandler(async (req, res, next) => {
+    console.log(req.body);
+}));
+
+
 router.post('/people', asyncHandler(async (req, res, next) => {
     new JSONAPIDeserializer({ keyForAttribute: 'underscore_case' }).deserialize(req.body, async (err, user) => {
         try {
