@@ -4,9 +4,13 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
+const fs = require('fs');
+const jwt = require('jsonwebtoken');
+
 
 const db = require('../db/index');
-// const jwt = require('../jwt/jwt');
+
+const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
 
 const router = express.Router();
 
@@ -18,7 +22,12 @@ router.post('/token', asyncHandler(async (req, res, next) => {
             if (data.rowCount === 1) {
                 const person = data.rows[0];
                 if (bcrypt.compareSync(password, person.password)) {
-                    // TODO: JWT SIGN AND SEND TOKEN
+                    const payload = {
+                        user_name: username,
+                    };
+                    const token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+                    res.status(200).send(`{ "access_token": "${token}" }`);
+                    next();
                 } else {
                     res.status(400).send('{"error": "invalid_grant"}');
                     next();
@@ -28,9 +37,11 @@ router.post('/token', asyncHandler(async (req, res, next) => {
                 next();
             }
         } catch (error) {
-            res.status(400).send('{ "error": "unsupported_grant_type" }');
-            next();
+            next(error);
         }
+    } else {
+        res.status(400).send('{ "error": "unsupported_grant_type" }');
+        next();
     }
 }));
 
