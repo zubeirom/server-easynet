@@ -61,10 +61,7 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
         redirect_uri,
         client_id: '988101118104-q1jd4s2frs0vbshbh92qjpm6vgbfrl6r.apps.googleusercontent.com',
         client_secret: 'PUi6CFpg0SPjd7VkLUQatfNj',
-        scope: [
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-        ],
+        scope: '',
         grant_type: 'authorization_code',
     };
 
@@ -94,16 +91,16 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
             const payload = {
                 user_name: email,
             };
-            const token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
-            res.status(200).send(`{ "access_token": "${token}" }`);
+            const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            res.status(200).send(access_token);
             next();
         } else {
             // user existing, getting user_name and make jwt
             const payload = {
                 user_name: email,
             };
-            const token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
-            res.status(200).send(`{ "access_token": "${token}" }`);
+            const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            res.status(200).send(access_token);
             next();
         }
     } catch (error) {
