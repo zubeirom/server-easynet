@@ -6,6 +6,8 @@ const asyncHandler = require('express-async-handler');
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
+const google = require('googleapis');
 
 
 const db = require('../db/index');
@@ -42,6 +44,50 @@ router.post('/token', asyncHandler(async (req, res, next) => {
     } else {
         res.status(400).send('{ "error": "unsupported_grant_type" }');
         next();
+    }
+}));
+
+router.post('/auth-google', asyncHandler(async (req, res, next) => {
+    const { code, redirect_uri } = req.body;
+
+    const getTokenHeader = {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    };
+
+
+    const body = {
+        code,
+        redirect_uri,
+        client_id: '988101118104-q1jd4s2frs0vbshbh92qjpm6vgbfrl6r.apps.googleusercontent.com',
+        client_secret: 'PUi6CFpg0SPjd7VkLUQatfNj',
+        scope: '',
+        grant_type: 'authorization_code',
+    };
+
+    try {
+        // get google access token
+        const getAccessToken = await axios.post(`https://oauth2.googleapis.com/token?code=${code}&client_id=${body.client_id}&client_secret=${body.client_secret}&redirect_uri=${body.redirect_uri}&grant_type=${body.grant_type}`, body, getTokenHeader);
+
+        const { data } = getAccessToken;
+
+        const authHeader = {
+            headers: {
+                Authorization: `Bearer ${data.access_token}`,
+            },
+        };
+
+        const profile = await axios.get('https://www.googleapis.com/userinfo/v2/me', authHeader);
+
+        const { email } = profile.data;
+
+        // res.status(200).send(getAccessToken.data);
+        // next();
+    } catch (error) {
+        console.log(error);
+        next(error);
     }
 }));
 
