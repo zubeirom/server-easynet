@@ -63,7 +63,10 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
         redirect_uri,
         client_id: '988101118104-q1jd4s2frs0vbshbh92qjpm6vgbfrl6r.apps.googleusercontent.com',
         client_secret: 'PUi6CFpg0SPjd7VkLUQatfNj',
-        scope: '',
+        scope: [
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile',
+        ],
         grant_type: 'authorization_code',
     };
 
@@ -81,10 +84,30 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
 
         const profile = await axios.get('https://www.googleapis.com/userinfo/v2/me', authHeader);
 
-        const { email } = profile.data;
+        const { email, picture } = profile.data;
 
-        // res.status(200).send(getAccessToken.data);
-        // next();
+        // Check with db
+        const query = await db.query(`SELECT * FROM person WHERE user_name='${email}'`);
+
+        if (query.rowCount === 0) {
+            // user not existing, now storing in db
+            await db.query(`INSERT INTO person(user_name, image) VALUES('${email}', '${picture}')`);
+
+            const payload = {
+                user_name: email,
+            };
+            const token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            res.status(200).send(`{ "access_token": "${token}" }`);
+            next();
+        } else {
+            // user existing, getting user_name and make jwt
+            const payload = {
+                user_name: email,
+            };
+            const token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            res.status(200).send(`{ "access_token": "${token}" }`);
+            next();
+        }
     } catch (error) {
         console.log(error);
         next(error);
