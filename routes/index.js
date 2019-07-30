@@ -7,6 +7,7 @@ const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
+const FB = require('fb');
 
 const db = require('../db/index');
 
@@ -106,6 +107,53 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
     } catch (error) {
         console.log(error);
         next(error);
+    }
+}));
+
+router.post('/auth-facebook', asyncHandler(async (req, res, next) => {
+    const { code, redirectUri } = req.body;
+
+    try {
+        const getAccessToken = await FB.api('oauth/access_token', {
+            client_id: '1329692483863203',
+            client_secret: '73e571ce9e5613c07516d74da43acf3a',
+            redirect_uri: redirectUri,
+            code,
+        });
+
+        const authHeader = {
+            headers: {
+                Authorization: `Bearer ${getAccessToken.access_token}`,
+            },
+        };
+
+        const profile = await axios.get('https://graph.facebook.com/v4.0/me?fields=email', authHeader);
+
+        const { email } = profile.data;
+
+        const query = await db.query(`SELECT * FROM person WHERE user_name='${email}'`);
+
+        if (query.rowCount === 0) {
+            // user not existing, now storing in db
+            await db.query(`INSERT INTO person(user_name) VALUES('${email}')`);
+
+            const payload = {
+                user_name: email,
+            };
+            const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            res.status(200).send({ access_token });
+            next();
+        } else {
+            // user existing, getting user_name and make jwt
+            const payload = {
+                user_name: email,
+            };
+            const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            res.status(200).send({ access_token });
+            next();
+        }
+    } catch (error) {
+        console.log(error);
     }
 }));
 
