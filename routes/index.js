@@ -7,8 +7,6 @@ const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const google = require('googleapis');
-
 
 const db = require('../db/index');
 
