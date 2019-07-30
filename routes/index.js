@@ -92,7 +92,7 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
                 user_name: email,
             };
             const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
-            res.status(200).send(access_token);
+            res.status(200).send({ access_token });
             next();
         } else {
             // user existing, getting user_name and make jwt
@@ -100,7 +100,7 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
                 user_name: email,
             };
             const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
-            res.status(200).send(access_token);
+            res.status(200).send({ access_token });
             next();
         }
     } catch (error) {
@@ -108,7 +108,6 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
         next(error);
     }
 }));
-
 
 router.post('/people', asyncHandler(async (req, res, next) => {
     new JSONAPIDeserializer({ keyForAttribute: 'underscore_case' }).deserialize(req.body, async (err, user) => {
