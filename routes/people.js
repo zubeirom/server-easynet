@@ -4,14 +4,14 @@ const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const JSONAPISerializer = require('jsonapi-serializer').Serializer;
-const fs = require('fs');
-const jwt = require('jsonwebtoken');
-const axios = require('axios');
-const FB = require('fb');
+// const fs = require('fs');
+// const jwt = require('jsonwebtoken');
+// const axios = require('axios');
+// const FB = require('fb');
 
 const db = require('../db/index');
 
-const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
+// const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
 
 const router = express.Router();
 
