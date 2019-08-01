@@ -14,6 +14,8 @@ app.use(cors());
 
 app.use('/', require('./routes/index'));
 
+app.use('/', require('./routes/people'));
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, console.log(`Server started on port ${PORT}`));
