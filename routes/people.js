@@ -1,23 +1,49 @@
+/* eslint-disable camelcase */
 require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const JSONAPISerializer = require('jsonapi-serializer').Serializer;
-// const fs = require('fs');
-// const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const jwt = require('jsonwebtoken');
 // const axios = require('axios');
 // const FB = require('fb');
 
 const db = require('../db/index');
 
-// const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
+const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
 
 const router = express.Router();
 
 const UserSerializer = new JSONAPISerializer('people', {
-    attributes: ['first_name', 'last_name', 'biography', 'age', 'status', 'password', 'image'],
+    attributes: ['user_name', 'first_name', 'last_name', 'biography', 'age', 'status', 'password', 'image'],
+    keyForAttribute: 'underscore_case',
 });
+
+const getAccessToken = (req) => {
+    const header = req.get('Authorization');
+    const tokenarr = header.split(' ');
+    return tokenarr[1];
+};
+
+router.get('/people', asyncHandler(async (req, res, next) => {
+    try {
+        const accessToken = getAccessToken(req);
+        const payload = await jwt.verify(accessToken, privateKEY);
+        const { user_name } = payload;
+
+        const query = await db.query(`SELECT * FROM person WHERE user_name='${user_name}'`);
+
+        const person = query.rows[0];
+
+        const userJson = UserSerializer.serialize(person);
+        res.status(200).send(userJson);
+        next();
+    } catch (error) {
+        console.log(error);
+    }
+}));
 
 router.post('/people', asyncHandler(async (req, res, next) => {
     new JSONAPIDeserializer({ keyForAttribute: 'underscore_case' }).deserialize(req.body, async (err, user) => {
