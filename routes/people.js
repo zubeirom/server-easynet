@@ -17,7 +17,7 @@ const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
 const router = express.Router();
 
 const UserSerializer = new JSONAPISerializer('people', {
-    attributes: ['user_name', 'first_name', 'last_name', 'biography', 'age', 'status', 'password', 'image'],
+    attributes: ['user_name', 'first_name', 'last_name', 'biography', 'age', 'status', 'image'],
     keyForAttribute: 'underscore_case',
 });
 
@@ -43,6 +43,22 @@ router.get('/people', asyncHandler(async (req, res, next) => {
     } catch (error) {
         console.log(error);
     }
+}));
+
+router.patch('/people/:id', asyncHandler(async (req, res, next) => {
+    new JSONAPIDeserializer({
+        keyForAttribute: 'underscore_case',
+    }).deserialize(req.body, async (err, user) => {
+        try {
+            await db.query(`UPDATE person SET first_name='${user.first_name}', last_name='${user.last_name}', biography='${user.biography}', age=${user.age}, status='${user.status}', image='${user.image}' WHERE user_name='${user.user_name}'`);
+
+            const userJson = UserSerializer.serialize(user);
+            res.status(200).send(userJson);
+            next();
+        } catch (error) {
+            next(error);
+        }
+    });
 }));
 
 router.post('/people', asyncHandler(async (req, res, next) => {
