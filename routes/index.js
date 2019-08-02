@@ -26,7 +26,7 @@ router.post('/token', asyncHandler(async (req, res, next) => {
                     const payload = {
                         user_name: username,
                     };
-                    const token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+                    const token = await jwt.sign(payload, privateKEY);
                     res.status(200).send(`{ "access_token": "${token}" }`);
                     next();
                 } else {
@@ -92,7 +92,7 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
             const payload = {
                 user_name: email,
             };
-            const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            const access_token = await jwt.sign(payload, privateKEY);
             res.status(200).send({ access_token });
             next();
         } else {
@@ -100,7 +100,7 @@ router.post('/auth-google', asyncHandler(async (req, res, next) => {
             const payload = {
                 user_name: email,
             };
-            const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            const access_token = await jwt.sign(payload, privateKEY);
             res.status(200).send({ access_token });
             next();
         }
@@ -140,7 +140,7 @@ router.post('/auth-facebook', asyncHandler(async (req, res, next) => {
             const payload = {
                 user_name: email,
             };
-            const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            const access_token = await jwt.sign(payload, privateKEY);
             res.status(200).send({ access_token });
             next();
         } else {
@@ -148,7 +148,7 @@ router.post('/auth-facebook', asyncHandler(async (req, res, next) => {
             const payload = {
                 user_name: email,
             };
-            const access_token = await jwt.sign(payload, privateKEY, { expiresIn: '2h' });
+            const access_token = await jwt.sign(payload, privateKEY);
             res.status(200).send({ access_token });
             next();
         }
