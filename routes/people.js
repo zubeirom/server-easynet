@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+/* eslint-disable no-param-reassign */
 require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -33,9 +34,8 @@ router.get('/people', asyncHandler(async (req, res, next) => {
         const payload = await jwt.verify(accessToken, privateKEY);
         const { user_name } = payload;
 
-        const query = await db.query(`SELECT * FROM person WHERE user_name='${user_name}'`);
-
-        const person = query.rows[0];
+        const queryPerson = await db.query(`SELECT * FROM person WHERE user_name='${user_name}'`);
+        const person = queryPerson.rows[0];
 
         const userJson = UserSerializer.serialize(person);
         res.status(200).send(userJson);

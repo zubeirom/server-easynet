@@ -13,7 +13,7 @@ app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(cors());
 
 app.use('/', require('./routes/index'));
-
+app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/people'));
 
 const PORT = process.env.PORT || 3000;
