@@ -22,6 +22,11 @@ const UserSerializer = new JSONAPISerializer('people', {
     keyForAttribute: 'underscore_case',
 });
 
+const FriendSerializer = new JSONAPISerializer('friends', {
+    attributes: ['user_name', 'friend'],
+    keyForAttribute: 'underscore_case',
+});
+
 const getAccessToken = (req) => {
     const header = req.get('Authorization');
     const tokenarr = header.split(' ');
@@ -42,6 +47,21 @@ router.get('/people', asyncHandler(async (req, res, next) => {
         next();
     } catch (error) {
         console.log(error);
+        next(error);
+    }
+}));
+
+router.get('/people-by-user', asyncHandler(async (req, res, next) => {
+    try {
+        const { user_name } = req.query;
+        const queryFriends = await db.query(`SELECT * FROM friends WHERE user_name='${user_name}'`);
+        const friends = queryFriends.rows;
+        const friendsJson = FriendSerializer.serialize(friends);
+        res.status(200).send(friendsJson);
+        next();
+    } catch (error) {
+        console.log(error);
+        next(error);
     }
 }));
 
