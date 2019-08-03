@@ -39,7 +39,7 @@ router.get('/people', asyncHandler(async (req, res, next) => {
         const payload = await jwt.verify(accessToken, privateKEY);
         const { user_name } = payload;
 
-        const queryPerson = await db.query(`SELECT * FROM person WHERE user_name='${user_name}'`);
+        const queryPerson = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE user_name='${user_name}'`);
         const person = queryPerson.rows[0];
 
         const userJson = UserSerializer.serialize(person);
@@ -56,9 +56,24 @@ router.get('/people-by-user', asyncHandler(async (req, res, next) => {
         const { user_name } = req.query;
         const queryFriends = await db.query(`SELECT * FROM friends WHERE user_name='${user_name}'`);
         const friends = queryFriends.rows;
-        const friendsJson = FriendSerializer.serialize(friends);
-        res.status(200).send(friendsJson);
-        next();
+        if (queryFriends.rowCount === 0) {
+            const friendsJson = FriendSerializer.serialize(friends);
+            res.status(200).send(friendsJson);
+            next();
+        }
+        let itemsProcessed = 0;
+        friends.forEach(async (user) => {
+            const queryUser = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE user_name='${user.friend}'`);
+            const friend = queryUser.rows[0];
+            user.friend = friend;
+            /* eslint-disable no-plusplus  */
+            itemsProcessed++;
+            if (itemsProcessed === friends.length) {
+                const friendsJson = FriendSerializer.serialize(friends);
+                res.status(200).send(friendsJson);
+                next();
+            }
+        });
     } catch (error) {
         console.log(error);
         next(error);

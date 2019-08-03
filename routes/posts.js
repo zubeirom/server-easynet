@@ -29,9 +29,14 @@ router.get('/posts', asyncHandler(async (req, res, next) => {
         const { user_name } = req.query;
 
         const query = await db.query(`SELECT * FROM post WHERE author='${user_name}'`);
-        const query2 = await db.query(`SELECT * FROM person WHERE user_name='${user_name}'`);
+        const query2 = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE user_name='${user_name}'`);
         const posts = query.rows;
         const author = query2.rows[0];
+        if (query.rowCount === 0) {
+            const postsJson = PostSerializer.serialize(posts);
+            res.status(200).send(postsJson);
+            next();
+        }
         let itemsProcessed = 0;
         posts.forEach(async (post) => {
             const likesQuery = await db.query(`SELECT * FROM likes WHERE post_id=${post.post_id}`);
