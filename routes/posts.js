@@ -2,9 +2,9 @@
 /* eslint-disable no-param-reassign */
 require('dotenv').config();
 const express = require('express');
-const bcrypt = require('bcryptjs');
+// const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
-const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
+// const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 const moment = require('moment');
 // const fs = require('fs');
@@ -57,6 +57,49 @@ router.get('/posts', asyncHandler(async (req, res, next) => {
         });
     } catch (error) {
         console.log(error);
+    }
+}));
+
+router.get('/all-posts', asyncHandler(async (req, res, next) => {
+    try {
+        const query = await db.query('SELECT * FROM post');
+        const posts = query.rows;
+        if (query.rowCount === 0) {
+            const postsJson = PostSerializer.serialize(posts);
+            res.status(200).send(postsJson);
+            next();
+        }
+        let itemsProcessed = 0;
+        posts.forEach(async (post) => {
+            const likesQuery = await db.query(`SELECT * FROM likes WHERE post_id=${post.post_id}`);
+            const commentsQuery = await db.query(`SELECT * FROM comment WHERE post_id=${post.post_id}`);
+            const authorQuery = await db.query(`SELECT * FROM person WHERE user_name='${post.author}'`);
+            const commentNum = commentsQuery.rows;
+            const likesNum = likesQuery.rows;
+            const author = authorQuery.rows[0];
+            post.comments = commentNum;
+            const { comments } = post;
+            comments.forEach(async (comment) => {
+                comment.timeAgo = moment(comment.created).fromNow();
+                const commentAuthor = await db.query(`SELECT * FROM person WHERE user_name='${comment.author}'`);
+                const auth = commentAuthor.rows[0];
+                comment.author = auth;
+            });
+            post.likes = likesNum;
+            post.person = author;
+            post.timeAgo = moment(post.created).fromNow();
+            /* eslint-disable no-plusplus  */
+            itemsProcessed++;
+            if (itemsProcessed === posts.length) {
+                setTimeout(() => {
+                    const postsJson = PostSerializer.serialize(posts);
+                    res.status(200).send(postsJson);
+                    next();
+                }, 500);
+            }
+        });
+    } catch (error) {
+        next(error);
     }
 }));
 

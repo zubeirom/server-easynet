@@ -15,6 +15,7 @@ app.use(cors());
 app.use('/', require('./routes/index'));
 app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/people'));
+app.use('/comments', require('./routes/comments'));
 
 const PORT = process.env.PORT || 3000;
 
