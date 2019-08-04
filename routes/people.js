@@ -18,7 +18,7 @@ const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
 const router = express.Router();
 
 const UserSerializer = new JSONAPISerializer('people', {
-    attributes: ['user_name', 'first_name', 'last_name', 'biography', 'age', 'status', 'image'],
+    attributes: ['user_name', 'first_name', 'last_name', 'biography', 'age', 'status', 'image', 'posts', 'friends'],
     keyForAttribute: 'underscore_case',
 });
 
@@ -47,6 +47,46 @@ router.get('/people', asyncHandler(async (req, res, next) => {
         next();
     } catch (error) {
         console.log(error);
+        next(error);
+    }
+}));
+
+router.get('/people/:id', asyncHandler(async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const queryPerson = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE id=${id}`);
+        const person = queryPerson.rows[0];
+        const queryFriends = await db.query(`SELECT * FROM friends WHERE user_name='${person.user_name}'`);
+        const friends = queryFriends.rows;
+        friends.forEach(async (friend) => {
+            const query = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE user_name='${friend.user_name}'`);
+            const p = query.rows[0];
+            friend.person = p;
+        });
+        person.friends = friends;
+        const queryPosts = await db.query(`SELECT * FROM post WHERE author='${person.user_name}' ORDER BY created DESC`);
+        const postMap = queryPosts.rows;
+        person.posts = postMap;
+        const { posts } = person;
+        let itemsProcessed = 0;
+        posts.forEach(async (post) => {
+            const queryComments = await db.query(`SELECT * FROM comment WHERE post_id=${post.post_id}`);
+            const comments = queryComments.rowCount;
+            await db.query(`SELECT * FROM likes WHERE post_id=${post.post_id} `)
+                .then((queryLikes) => {
+                    const likes = queryLikes.rowCount;
+                    post.commentLength = comments;
+                    post.likesLength = likes;
+                    /* eslint-disable no-plusplus  */
+                    itemsProcessed++;
+                    if (itemsProcessed === posts.length) {
+                        const userJson = UserSerializer.serialize(person);
+                        res.status(200).send(userJson);
+                        next();
+                    }
+                });
+        });
+    } catch (error) {
         next(error);
     }
 }));
