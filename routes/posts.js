@@ -62,8 +62,9 @@ router.get('/posts', asyncHandler(async (req, res, next) => {
 
 router.get('/all-posts', asyncHandler(async (req, res, next) => {
     try {
-        const query = await db.query('SELECT * FROM post');
+        const query = await db.query('SELECT * FROM post ORDER BY created DESC');
         const posts = query.rows;
+        console.log(posts);
         if (query.rowCount === 0) {
             const postsJson = PostSerializer.serialize(posts);
             res.status(200).send(postsJson);
@@ -72,7 +73,7 @@ router.get('/all-posts', asyncHandler(async (req, res, next) => {
         let itemsProcessed = 0;
         posts.forEach(async (post) => {
             const likesQuery = await db.query(`SELECT * FROM likes WHERE post_id=${post.post_id}`);
-            const commentsQuery = await db.query(`SELECT * FROM comment WHERE post_id=${post.post_id}`);
+            const commentsQuery = await db.query(`SELECT * FROM comment WHERE post_id=${post.post_id} ORDER BY created DESC`);
             const authorQuery = await db.query(`SELECT * FROM person WHERE user_name='${post.author}'`);
             const commentNum = commentsQuery.rows;
             const likesNum = likesQuery.rows;
@@ -101,6 +102,13 @@ router.get('/all-posts', asyncHandler(async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+}));
+
+router.post('/posts', asyncHandler(async (req, res, next) => {
+    const { message, author } = req.body;
+    await db.query(`INSERT INTO post(message, author) VALUES('${message}', '${author}') RETURNING * `);
+    res.status(200).send([{ message: 'Successfully added post' }]);
+    next();
 }));
 
 module.exports = router;
