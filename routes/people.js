@@ -10,6 +10,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 // const axios = require('axios');
 // const FB = require('fb');
+const moment = require('moment');
 
 const db = require('../db/index');
 
@@ -18,7 +19,7 @@ const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
 const router = express.Router();
 
 const UserSerializer = new JSONAPISerializer('people', {
-    attributes: ['user_name', 'first_name', 'last_name', 'biography', 'age', 'status', 'image', 'posts', 'friends'],
+    attributes: ['user_name', 'first_name', 'last_name', 'biography', 'age', 'status', 'image', 'posts', 'friends', 'isFriend'],
     keyForAttribute: 'underscore_case',
 });
 
@@ -54,12 +55,21 @@ router.get('/people', asyncHandler(async (req, res, next) => {
 router.get('/people/:id', asyncHandler(async (req, res, next) => {
     try {
         const { id } = req.params;
+        const accessToken = getAccessToken(req);
+        const payload = await jwt.verify(accessToken, privateKEY);
+        const { user_name } = payload;
         const queryPerson = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE id=${id}`);
         const person = queryPerson.rows[0];
         const queryFriends = await db.query(`SELECT * FROM friends WHERE user_name='${person.user_name}'`);
         const friends = queryFriends.rows;
+        /* eslint-disable no-plusplus  */
+        for (let i = 0; i < friends.length; i++) {
+            if (user_name === friends[i].friend) {
+                person.isFriend = true;
+            }
+        }
         friends.forEach(async (friend) => {
-            const query = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE user_name='${friend.user_name}'`);
+            const query = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE user_name='${friend.friend}'`);
             const p = query.rows[0];
             friend.person = p;
         });
@@ -68,24 +78,31 @@ router.get('/people/:id', asyncHandler(async (req, res, next) => {
         const postMap = queryPosts.rows;
         person.posts = postMap;
         const { posts } = person;
-        let itemsProcessed = 0;
-        posts.forEach(async (post) => {
-            const queryComments = await db.query(`SELECT * FROM comment WHERE post_id=${post.post_id}`);
-            const comments = queryComments.rowCount;
-            await db.query(`SELECT * FROM likes WHERE post_id=${post.post_id} `)
-                .then((queryLikes) => {
-                    const likes = queryLikes.rowCount;
-                    post.commentLength = comments;
-                    post.likesLength = likes;
-                    /* eslint-disable no-plusplus  */
-                    itemsProcessed++;
-                    if (itemsProcessed === posts.length) {
-                        const userJson = UserSerializer.serialize(person);
-                        res.status(200).send(userJson);
-                        next();
-                    }
-                });
-        });
+        if (queryPosts.rowCount === 0) {
+            const userJson = UserSerializer.serialize(person);
+            res.status(200).send(userJson);
+            next();
+        } else {
+            let itemsProcessed = 0;
+            posts.forEach(async (post) => {
+                const queryComments = await db.query(`SELECT * FROM comment WHERE post_id=${post.post_id}`);
+                const comments = queryComments.rowCount;
+                post.timeAgo = moment(post.created).fromNow();
+                await db.query(`SELECT * FROM likes WHERE post_id=${post.post_id} `)
+                    .then((queryLikes) => {
+                        const likes = queryLikes.rowCount;
+                        post.commentLength = comments;
+                        post.likesLength = likes;
+                        /* eslint-disable no-plusplus  */
+                        itemsProcessed++;
+                        if (itemsProcessed === posts.length) {
+                            const userJson = UserSerializer.serialize(person);
+                            res.status(200).send(userJson);
+                            next();
+                        }
+                    });
+            });
+        }
     } catch (error) {
         next(error);
     }
@@ -144,7 +161,7 @@ router.post('/people', asyncHandler(async (req, res, next) => {
                 const salt = bcrypt.genSaltSync(10);
                 const hash = bcrypt.hashSync(user.password, salt);
 
-                await db.query(`INSERT INTO person(user_name, first_name, last_name, password) VALUES('${user.user_name}', '${user.first_name}', '${user.last_name}', '${hash}')`);
+                await db.query(`INSERT INTO person(user_name, first_name, last_name, password, image) VALUES('${user.user_name}', '${user.first_name}', '${user.last_name}', '${hash}', 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png')`);
 
                 const obj = {
                     user_name: user.user_name,

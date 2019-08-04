@@ -135,7 +135,7 @@ router.post('/auth-facebook', asyncHandler(async (req, res, next) => {
 
         if (query.rowCount === 0) {
             // user not existing, now storing in db
-            await db.query(`INSERT INTO person(user_name) VALUES('${email}')`);
+            await db.query(`INSERT INTO person(user_name, image) VALUES('${email}', 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png')`);
 
             const payload = {
                 user_name: email,
