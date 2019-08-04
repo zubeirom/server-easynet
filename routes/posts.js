@@ -64,7 +64,6 @@ router.get('/all-posts', asyncHandler(async (req, res, next) => {
     try {
         const query = await db.query('SELECT * FROM post ORDER BY created DESC');
         const posts = query.rows;
-        console.log(posts);
         if (query.rowCount === 0) {
             const postsJson = PostSerializer.serialize(posts);
             res.status(200).send(postsJson);
