@@ -111,7 +111,9 @@ router.get('/people/:id', asyncHandler(async (req, res, next) => {
 
 router.get('/people-by-user', asyncHandler(async (req, res, next) => {
     try {
-        const { user_name } = req.query;
+        const { access_token } = req.query;
+        const payload = await jwt.verify(access_token, privateKEY);
+        const { user_name } = payload;
         const queryFriends = await db.query(`SELECT * FROM friends WHERE user_name='${user_name}'`);
         const friends = queryFriends.rows;
         if (queryFriends.rowCount === 0) {

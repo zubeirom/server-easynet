@@ -7,14 +7,14 @@ const asyncHandler = require('express-async-handler');
 // const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 const moment = require('moment');
-// const fs = require('fs');
-// const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const jwt = require('jsonwebtoken');
 // const axios = require('axios');
 // const FB = require('fb');
 
 const db = require('../db/index');
 
-// const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
+const privateKEY = fs.readFileSync('./jwt/private.key', 'utf8');
 
 const router = express.Router();
 
@@ -26,7 +26,9 @@ const PostSerializer = new JSONAPISerializer('posts', {
 
 router.get('/posts', asyncHandler(async (req, res, next) => {
     try {
-        const { user_name } = req.query;
+        const { access_token } = req.query;
+        const payload = await jwt.verify(access_token, privateKEY);
+        const { user_name } = payload;
 
         const query = await db.query(`SELECT * FROM post WHERE author='${user_name}'`);
         const query2 = await db.query(`SELECT age, biography, first_name, last_name, id, image, status, user_name FROM person WHERE user_name='${user_name}'`);
