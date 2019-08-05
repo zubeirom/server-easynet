@@ -66,6 +66,7 @@ router.get('/people/:id', asyncHandler(async (req, res, next) => {
         for (let i = 0; i < friends.length; i++) {
             if (user_name === friends[i].friend) {
                 person.isFriend = true;
+                break;
             }
         }
         friends.forEach(async (friend) => {
