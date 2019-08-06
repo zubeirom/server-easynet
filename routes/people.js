@@ -185,4 +185,17 @@ router.post('/people', asyncHandler(async (req, res, next) => {
     });
 }));
 
+router.delete('/people', asyncHandler(async (req, res, next) => {
+    try {
+        const { user_name } = req.body;
+
+        await db.query(`DELETE FROM person WHERE user_name='${user_name}'`);
+
+        res.status(200).send({});
+        next();
+    } catch (error) {
+        next(error);
+    }
+}));
+
 module.exports = router;
