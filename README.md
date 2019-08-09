@@ -1,5 +1,6 @@
 # Easynet
 > A very simple social network. The server runs on https://api-easynet.herokuapp.com
+
 Here is the frontend Repo: https://github.com/zubeir68/client-easynet
 
 ## Tech Stack
