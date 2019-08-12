@@ -2,6 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const http = require('http');
+
+
+// Prevent heroku app from sleeping
+setInterval(() => {
+    http.get('https://easynet.herokuapp.com');
+}, 300000); // every 5 minutes (300000)
 
 const app = express();
 
